@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"armbug.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;copy; 原创内容，转载请注明出处。 说明  操作系统：  Deepin Linux15.11 桌面版 开发板：    STM32MP157A-DK1 SDK版本： v1.2.0 PC $&gt;  表示在PC机上执行的命令行 Board $&gt;  表示在开发板上执行的命令行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32MPU学习笔记-使用SDK创建应用">
+<meta property="og:url" content="https://armbug.com/2020/06/20/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%BD%BF%E7%94%A8SDK%E5%88%9B%E5%BB%BA%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="我是一个酸菜鱼的博客">
+<meta property="og:description" content="&amp;copy; 原创内容，转载请注明出处。 说明  操作系统：  Deepin Linux15.11 桌面版 开发板：    STM32MP157A-DK1 SDK版本： v1.2.0 PC $&gt;  表示在PC机上执行的命令行 Board $&gt;  表示在开发板上执行的命令行">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://armbug.com/2020/06/20/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%BD%BF%E7%94%A8SDK%E5%88%9B%E5%BB%BA%E5%BA%94%E7%94%A8/gtk_hello_world.png">
+<meta property="article:published_time" content="2020-06-20T03:08:32.000Z">
+<meta property="article:modified_time" content="2020-09-26T09:57:54.000Z">
+<meta property="article:author" content="我是一个酸菜鱼">
+<meta property="article:tag" content="STM32MPU学习笔记">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="交叉编译">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://armbug.com/2020/06/20/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%BD%BF%E7%94%A8SDK%E5%88%9B%E5%BB%BA%E5%BA%94%E7%94%A8/gtk_hello_world.png">
+
+<link rel="canonical" href="https://armbug.com/2020/06/20/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%BD%BF%E7%94%A8SDK%E5%88%9B%E5%BB%BA%E5%BA%94%E7%94%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>STM32MPU学习笔记-使用SDK创建应用 | 我是一个酸菜鱼的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">我是一个酸菜鱼的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">路漫漫其修远兮，吾将上下而求索</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://armbug.com/2020/06/20/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%BD%BF%E7%94%A8SDK%E5%88%9B%E5%BB%BA%E5%BA%94%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="我是一个酸菜鱼">
+      <meta itemprop="description" content="点灯工程师">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我是一个酸菜鱼的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          STM32MPU学习笔记-使用SDK创建应用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-20 11:08:32" itemprop="dateCreated datePublished" datetime="2020-06-20T11:08:32+08:00">2020-06-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-26 17:57:54" itemprop="dateModified" datetime="2020-09-26T17:57:54+08:00">2020-09-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index"><span itemprop="name">编程</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&copy; 原创内容，转载请注明出处。</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><blockquote>
+<ul>
+<li>操作系统：  Deepin Linux15.11 桌面版</li>
+<li>开发板：    STM32MP157A-DK1</li>
+<li>SDK版本： v1.2.0</li>
+<li>PC $&gt;  表示在PC机上执行的命令行</li>
+<li>Board $&gt;  表示在开发板上执行的命令行</li>
+</ul>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="安装SDK"><a href="#安装SDK" class="headerlink" title="安装SDK"></a>安装SDK</h2><h3 id="安装工具和依赖"><a href="#安装工具和依赖" class="headerlink" title="安装工具和依赖"></a>安装工具和依赖</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; sudo apt update</span><br><span class="line">PC $&gt; sudo apt install sed wget curl cvs subversion git-core coreutils unzip texi2html texinfo docbook-utils gawk python-pysqlite2 diffstat help2man make gcc build-essential g++ desktop-file-utils chrpath libxml2-utils xmlto docbook bsdmainutils iputils-ping cpio python-wand python-pycryptopp python-crypto</span><br><span class="line">PC $&gt; sudo apt install libsdl1.2-dev xterm corkscrew nfs-common nfs-kernel-server device-tree-compiler mercurial u-boot-tools libarchive-zip-perl</span><br><span class="line">PC $&gt; sudo apt install ncurses-dev bc linux-headers-generic gcc-multilib libncurses5-dev libncursesw5-dev lrzsz dos2unix lib32ncurses5 repo libssl-dev</span><br></pre></td></tr></table></figure>
+
+<p>如果提示linux-headers-generic找不到没关系，忽略也没影响。</p>
+<h3 id="配置mmc分区个数"><a href="#配置mmc分区个数" class="headerlink" title="配置mmc分区个数"></a>配置mmc分区个数</h3><p>默认情况下，在Linux系统上，mmc上最多允许8个分区。所有镜像（包括Starter Package，…）需要10个以上的分区用于存储设备。为了将每个设备的分区数扩展到16，必须在modprobe中添加以下选项</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; echo &#39;options mmc_block perdev_minors&#x3D;16&#39; &gt; &#x2F;tmp&#x2F;mmc_block.conf</span><br><span class="line">PC $&gt; sudo mv &#x2F;tmp&#x2F;mmc_block.conf &#x2F;etc&#x2F;modprobe.d&#x2F;mmc_block.conf</span><br></pre></td></tr></table></figure>
+
+<h3 id="在workspace下建个tmp目录用来存放下载的临时文件"><a href="#在workspace下建个tmp目录用来存放下载的临时文件" class="headerlink" title="在workspace下建个tmp目录用来存放下载的临时文件"></a>在workspace下建个tmp目录用来存放下载的临时文件</h3><p><code>PC $&gt; mkdir STM32MPU_workspace/tmp</code></p>
+<h3 id="下载SDK"><a href="#下载SDK" class="headerlink" title="下载SDK"></a>下载SDK</h3><p><a target="_blank" rel="noopener" href="https://www.st.com/content/ccc/resource/technical/software/sw_development_suite/group0/51/d4/96/18/27/ab/49/93/stm32mp1dev_yocto_sdk/files/SDK-x86_64-stm32mp1-openstlinux-20-02-19.tar.xz/jcr:content/translations/en.SDK-x86_64-stm32mp1-openstlinux-20-02-19.tar.xz">点击下载SDK V1.2.0</a></p>
+<h3 id="解压SDK"><a href="#解压SDK" class="headerlink" title="解压SDK"></a>解压SDK</h3><p><code>PC $&gt; tar xvf en.SDK-x86_64-stm32mp1-openstlinux-20-02-19.tar.xz</code></p>
+<h3 id="新建文件夹用来安装SDK"><a href="#新建文件夹用来安装SDK" class="headerlink" title="新建文件夹用来安装SDK"></a>新建文件夹用来安装SDK</h3><p>不创建此文件夹默认安装也行，SDK默认安装路径为<code>/opt/st/stm32mp1/2.6-openstlinux-20-02-19</code></p>
+<p><code>PC $&gt; mkdir -p $HOME/STM32MPU_workspace/STM32MP15-Ecosystem-v1.2.0/Developer-Package/SDK</code></p>
+<h3 id="给SDK安装脚本可执行权限"><a href="#给SDK安装脚本可执行权限" class="headerlink" title="给SDK安装脚本可执行权限"></a>给SDK安装脚本可执行权限</h3><p>脚本目录<code>$HOME/STM32MPU_workspace/tmp/stm32mp1-openstlinux-20-02-19/sdk</code></p>
+<p><code>PC $&gt; chmod +x st-image-weston-openstlinux-weston-stm32mp1-x86_64-toolchain-2.6-openstlinux-20-02-19.sh</code></p>
+<h3 id="执行安装脚本"><a href="#执行安装脚本" class="headerlink" title="执行安装脚本"></a>执行安装脚本</h3><p><code>./st-image-weston-openstlinux-weston-stm32mp1-x86_64-toolchain-2.6-openstlinux-20-02-19.sh</code></p>
+<p>执行后脚本输出信息,安装脚本会让你输入安装路径</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ST OpenSTLinux - Weston - (A Yocto Project Based Distro) SDK installer version 2.6-openstlinux-20-02-19</span><br><span class="line">&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">Enter target directory for SDK (default: &#x2F;opt&#x2F;st&#x2F;stm32mp1&#x2F;2.6-openstlinux-20-02-19): &#x2F;home&#x2F;zg&#x2F;STM32MPU_workspace&#x2F;STM32MP15-Ecosystem-v1.2.0&#x2F;Developer-Package&#x2F;SDK</span><br><span class="line">You are about to install the SDK to &quot;&#x2F;home&#x2F;zg&#x2F;STM32MPU_workspace&#x2F;STM32MP15-Ecosystem-v1.2.0&#x2F;Developer-Package&#x2F;SDK&quot;. Proceed[Y&#x2F;n]? y</span><br><span class="line">Extracting SDK...................................................................................................................................................................done</span><br><span class="line">Setting it up...done</span><br><span class="line">SDK has been successfully set up and is ready to be used.</span><br><span class="line">Each time you wish to use the SDK in a new shell session, you need to source the environment setup script e.g.</span><br></pre></td></tr></table></figure>
+
+<h3 id="导入SDK环境变量"><a href="#导入SDK环境变量" class="headerlink" title="导入SDK环境变量"></a>导入SDK环境变量</h3><p>同样使用脚本导入环境变量，如果在多个终端用，每次新开一个终端需要source一次。source表示将脚本加载到当前会话或当前shell中。source 不是在运行这个脚本，仅仅是source。</p>
+<p><code>PC $&gt; source $HOME/STM32MPU_workspace/STM32MP15-Ecosystem-v1.2.0/Developer-Package/SDK/environment-setup-cortexa7t2hf-neon-vfpv4-ostl-linux-gnueabi</code></p>
+<h2 id="检查SDK环境"><a href="#检查SDK环境" class="headerlink" title="检查SDK环境"></a>检查SDK环境</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; echo $ARCH</span><br><span class="line">&#x2F;*输出*&#x2F;</span><br><span class="line">arm</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; echo $CROSS_COMPILE</span><br><span class="line">&#x2F;*输出*&#x2F;</span><br><span class="line">arm-ostl-linux-gnueabi-</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; $CC --version</span><br><span class="line">&#x2F;*输出*&#x2F;</span><br><span class="line">arm-ostl-linux-gnueabi-gcc (GCC) 8.2.0</span><br><span class="line">Copyright (C) 2018 Free Software Foundation, Inc.</span><br><span class="line">This is free software; see the source for copying conditions.  There is NO</span><br><span class="line">warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; echo $OECORE_SDK_VERSION </span><br><span class="line">&#x2F;*输出*&#x2F;</span><br><span class="line">2.6-openstlinux-20-02-19</span><br></pre></td></tr></table></figure>
+
+<p>没问题的话就可以使用SDK创建你的应用了。</p>
+<h2 id="创建一个GTK程序"><a href="#创建一个GTK程序" class="headerlink" title="创建一个GTK程序"></a>创建一个GTK程序</h2><h3 id="创建目录存放你的代码"><a href="#创建目录存放你的代码" class="headerlink" title="创建目录存放你的代码"></a>创建目录存放你的代码</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; mkdir $HOME&#x2F;STM32MPU_workspace&#x2F;STM32MP15-Ecosystem-v1.2.0&#x2F;Developer-Package&#x2F;stm32mp1-openstlinux-20-02-19&#x2F;sources&#x2F;gtk_hello_world_example</span><br></pre></td></tr></table></figure>
+
+<h3 id="创建一个GTK程序-1"><a href="#创建一个GTK程序-1" class="headerlink" title="创建一个GTK程序"></a>创建一个GTK程序</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;gtk&#x2F;gtk.h&gt;</span><br><span class="line"></span><br><span class="line">static void</span><br><span class="line">print_hello (GtkWidget *widget,</span><br><span class="line">             gpointer   data)</span><br><span class="line">&#123;</span><br><span class="line">  g_print (&quot;Hello World\n&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void</span><br><span class="line">activate (GtkApplication *app,</span><br><span class="line">          gpointer        user_data)</span><br><span class="line">&#123;</span><br><span class="line">  GtkWidget *window;</span><br><span class="line">  GtkWidget *button;</span><br><span class="line">  GtkWidget *button_box;</span><br><span class="line"></span><br><span class="line">  window &#x3D; gtk_application_window_new (app);</span><br><span class="line">  gtk_window_set_title (GTK_WINDOW (window), &quot;Window&quot;);</span><br><span class="line">  gtk_window_set_default_size (GTK_WINDOW (window), 200, 200);</span><br><span class="line"></span><br><span class="line">  button_box &#x3D; gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);</span><br><span class="line">  gtk_container_add (GTK_CONTAINER (window), button_box);</span><br><span class="line"></span><br><span class="line">  button &#x3D; gtk_button_new_with_label (&quot;Hello World&quot;);</span><br><span class="line">  g_signal_connect (button, &quot;clicked&quot;, G_CALLBACK (print_hello), NULL);</span><br><span class="line">  g_signal_connect_swapped (button, &quot;clicked&quot;, G_CALLBACK (gtk_widget_destroy), window);</span><br><span class="line">  gtk_container_add (GTK_CONTAINER (button_box), button);</span><br><span class="line"></span><br><span class="line">  gtk_widget_show_all (window);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int</span><br><span class="line">main (int    argc,</span><br><span class="line">      char **argv)</span><br><span class="line">&#123;</span><br><span class="line">  GtkApplication *app;</span><br><span class="line">  int status;</span><br><span class="line"></span><br><span class="line">  app &#x3D; gtk_application_new (&quot;org.gtk.example&quot;, G_APPLICATION_FLAGS_NONE);</span><br><span class="line">  g_signal_connect (app, &quot;activate&quot;, G_CALLBACK (activate), NULL);</span><br><span class="line">  status &#x3D; g_application_run (G_APPLICATION (app), argc, argv);</span><br><span class="line">  g_object_unref (app);</span><br><span class="line"></span><br><span class="line">  return status;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="编写makefile"><a href="#编写makefile" class="headerlink" title="编写makefile"></a>编写makefile</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">PROG &#x3D; gtk_hello_world</span><br><span class="line">SRCS &#x3D; gtk_hello_world.c</span><br><span class="line"></span><br><span class="line">CLEANFILES &#x3D; $(PROG)</span><br><span class="line"></span><br><span class="line"># Add &#x2F; change option in CFLAGS and LDFLAGS</span><br><span class="line">CFLAGS +&#x3D; -Wall $(shell pkg-config --cflags gtk+-3.0)</span><br><span class="line">LDFLAGS +&#x3D; $(shell pkg-config --libs gtk+-3.0)</span><br><span class="line"></span><br><span class="line">all: $(PROG)</span><br><span class="line"></span><br><span class="line">$(PROG): $(SRCS)</span><br><span class="line">	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">	rm -f $(CLEANFILES) $(patsubst %.c,%.o, $(SRCS))</span><br></pre></td></tr></table></figure>
+
+<h3 id="执行make编译"><a href="#执行make编译" class="headerlink" title="执行make编译"></a>执行make编译</h3><p><code>PC $&gt; make</code></p>
+<p>编译之后生成<code>gtk_hello_world</code></p>
+<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><h3 id="使用板子的串口终端"><a href="#使用板子的串口终端" class="headerlink" title="使用板子的串口终端"></a>使用板子的串口终端</h3><p><code>Board $&gt; picocom -b 115200 /dev/ttyACM0</code></p>
+<h3 id="查看ip-此处我没有接RJ网线，用的USB"><a href="#查看ip-此处我没有接RJ网线，用的USB" class="headerlink" title="查看ip(此处我没有接RJ网线，用的USB)"></a>查看ip(此处我没有接RJ网线，用的USB)</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">usb0      Link encap:Ethernet  HWaddr 9E:2D:49:78:9A:92  </span><br><span class="line">          inet addr:192.168.7.1  Bcast:192.168.7.255  Mask:255.255.255.0</span><br><span class="line">          inet6 addr: fe80::9c2d:49ff:fe78:9a92&#x2F;64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1</span><br><span class="line">          RX packets:58 errors:0 dropped:0 overruns:0 frame:0</span><br><span class="line">          TX packets:68 errors:0 dropped:0 overruns:0 carrier:0</span><br><span class="line">          collisions:0 txqueuelen:1000 </span><br><span class="line">          RX bytes:6541 (6.3 KiB)  TX bytes:14557 (14.2 KiB)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="将交叉编译后的软件拷贝到板子上"><a href="#将交叉编译后的软件拷贝到板子上" class="headerlink" title="将交叉编译后的软件拷贝到板子上"></a>将交叉编译后的软件拷贝到板子上</h3><p><code>PC $&gt; scp gtk_hello_world root@192.168.7.1:/usr/local</code></p>
+<h3 id="板子上执行程序"><a href="#板子上执行程序" class="headerlink" title="板子上执行程序"></a>板子上执行程序</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Board $&gt; cd &#x2F;usr&#x2F;local&#x2F;</span><br><span class="line">Board $&gt; .&#x2F;gtk_hello_world</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>执行后效果</p>
+<img src="/2020/06/20/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E4%BD%BF%E7%94%A8SDK%E5%88%9B%E5%BB%BA%E5%BA%94%E7%94%A8/gtk_hello_world.png" class="" title="hello world">
+
+<h2 id="NOTE"><a href="#NOTE" class="headerlink" title="NOTE"></a>NOTE</h2><p>如果不是使用的SDK V1.2.0 操作可能会有不同，以官方WIKI为准。</p>
+<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><p><em>WIKI地址：<a target="_blank" rel="noopener" href="https://wiki.st.com/">WIKI</a></em></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag"># STM32MPU学习笔记</a>
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91/" rel="tag"># 交叉编译</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/06/19/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-Starter-Package/" rel="prev" title="STM32MPU学习笔记-Starter-Package">
+      <i class="fa fa-chevron-left"></i> STM32MPU学习笔记-Starter-Package
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/09/12/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E6%9E%84%E5%BB%BADistribution-Package-Weston/" rel="next" title="STM32MPU学习笔记-构建Distribution-Package-Weston">
+      STM32MPU学习笔记-构建Distribution-Package-Weston <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85SDK"><span class="nav-number">2.</span> <span class="nav-text">安装SDK</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%B7%A5%E5%85%B7%E5%92%8C%E4%BE%9D%E8%B5%96"><span class="nav-number">2.1.</span> <span class="nav-text">安装工具和依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEmmc%E5%88%86%E5%8C%BA%E4%B8%AA%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">配置mmc分区个数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8workspace%E4%B8%8B%E5%BB%BA%E4%B8%AAtmp%E7%9B%AE%E5%BD%95%E7%94%A8%E6%9D%A5%E5%AD%98%E6%94%BE%E4%B8%8B%E8%BD%BD%E7%9A%84%E4%B8%B4%E6%97%B6%E6%96%87%E4%BB%B6"><span class="nav-number">2.3.</span> <span class="nav-text">在workspace下建个tmp目录用来存放下载的临时文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDSDK"><span class="nav-number">2.4.</span> <span class="nav-text">下载SDK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%8E%8BSDK"><span class="nav-number">2.5.</span> <span class="nav-text">解压SDK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B0%E5%BB%BA%E6%96%87%E4%BB%B6%E5%A4%B9%E7%94%A8%E6%9D%A5%E5%AE%89%E8%A3%85SDK"><span class="nav-number">2.6.</span> <span class="nav-text">新建文件夹用来安装SDK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%99SDK%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%9D%83%E9%99%90"><span class="nav-number">2.7.</span> <span class="nav-text">给SDK安装脚本可执行权限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC"><span class="nav-number">2.8.</span> <span class="nav-text">执行安装脚本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5SDK%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">2.9.</span> <span class="nav-text">导入SDK环境变量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5SDK%E7%8E%AF%E5%A2%83"><span class="nav-number">3.</span> <span class="nav-text">检查SDK环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AAGTK%E7%A8%8B%E5%BA%8F"><span class="nav-number">4.</span> <span class="nav-text">创建一个GTK程序</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%9B%AE%E5%BD%95%E5%AD%98%E6%94%BE%E4%BD%A0%E7%9A%84%E4%BB%A3%E7%A0%81"><span class="nav-number">4.1.</span> <span class="nav-text">创建目录存放你的代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AAGTK%E7%A8%8B%E5%BA%8F-1"><span class="nav-number">4.2.</span> <span class="nav-text">创建一个GTK程序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E5%86%99makefile"><span class="nav-number">4.3.</span> <span class="nav-text">编写makefile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8Cmake%E7%BC%96%E8%AF%91"><span class="nav-number">4.4.</span> <span class="nav-text">执行make编译</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD"><span class="nav-number">5.</span> <span class="nav-text">下载</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%9D%BF%E5%AD%90%E7%9A%84%E4%B8%B2%E5%8F%A3%E7%BB%88%E7%AB%AF"><span class="nav-number">5.1.</span> <span class="nav-text">使用板子的串口终端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8Bip-%E6%AD%A4%E5%A4%84%E6%88%91%E6%B2%A1%E6%9C%89%E6%8E%A5RJ%E7%BD%91%E7%BA%BF%EF%BC%8C%E7%94%A8%E7%9A%84USB"><span class="nav-number">5.2.</span> <span class="nav-text">查看ip(此处我没有接RJ网线，用的USB)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%86%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E8%BD%AF%E4%BB%B6%E6%8B%B7%E8%B4%9D%E5%88%B0%E6%9D%BF%E5%AD%90%E4%B8%8A"><span class="nav-number">5.3.</span> <span class="nav-text">将交叉编译后的软件拷贝到板子上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%BF%E5%AD%90%E4%B8%8A%E6%89%A7%E8%A1%8C%E7%A8%8B%E5%BA%8F"><span class="nav-number">5.4.</span> <span class="nav-text">板子上执行程序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NOTE"><span class="nav-number">6.</span> <span class="nav-text">NOTE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E6%A1%A3"><span class="nav-number">7.</span> <span class="nav-text">文档</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">我是一个酸菜鱼</p>
+  <div class="site-description" itemprop="description">点灯工程师</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">我是一个酸菜鱼</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/clicklove.js"></script>

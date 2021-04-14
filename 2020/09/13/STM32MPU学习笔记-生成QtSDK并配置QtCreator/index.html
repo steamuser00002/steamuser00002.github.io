@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"armbug.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;copy; 原创内容，转载请注明出处。 说明  操作系统：  Deepin Linux15.11 桌面版 开发板：    STM32MP157A-DK1 SDK版本： v1.2.0 QtCreator版本：4.10.0 PC $&gt;  表示在PC机上执行的命令行 Board $&gt;  表示在开发板上执行的命令行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32MPU学习笔记-生成QtSDK并配置QtCreator">
+<meta property="og:url" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/index.html">
+<meta property="og:site_name" content="我是一个酸菜鱼的博客">
+<meta property="og:description" content="&amp;copy; 原创内容，转载请注明出处。 说明  操作系统：  Deepin Linux15.11 桌面版 开发板：    STM32MP157A-DK1 SDK版本： v1.2.0 QtCreator版本：4.10.0 PC $&gt;  表示在PC机上执行的命令行 Board $&gt;  表示在开发板上执行的命令行">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/qmake.png">
+<meta property="og:image" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/gcc.png">
+<meta property="og:image" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/gpp.png">
+<meta property="og:image" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/gdb.png">
+<meta property="og:image" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/dev.png">
+<meta property="og:image" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/kits.png">
+<meta property="og:image" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/tran.png">
+<meta property="og:image" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/configkit.png">
+<meta property="article:published_time" content="2020-09-13T07:50:13.000Z">
+<meta property="article:modified_time" content="2020-09-26T09:58:18.000Z">
+<meta property="article:author" content="我是一个酸菜鱼">
+<meta property="article:tag" content="Qt">
+<meta property="article:tag" content="STM32MPU学习笔记">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Distribution-Package">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/qmake.png">
+
+<link rel="canonical" href="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>STM32MPU学习笔记-生成QtSDK并配置QtCreator | 我是一个酸菜鱼的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">我是一个酸菜鱼的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">路漫漫其修远兮，吾将上下而求索</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://armbug.com/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="我是一个酸菜鱼">
+      <meta itemprop="description" content="点灯工程师">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="我是一个酸菜鱼的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          STM32MPU学习笔记-生成QtSDK并配置QtCreator
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-09-13 15:50:13" itemprop="dateCreated datePublished" datetime="2020-09-13T15:50:13+08:00">2020-09-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-26 17:58:18" itemprop="dateModified" datetime="2020-09-26T17:58:18+08:00">2020-09-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/programming/" itemprop="url" rel="index"><span itemprop="name">编程</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&copy; 原创内容，转载请注明出处。</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><blockquote>
+<ul>
+<li>操作系统：  Deepin Linux15.11 桌面版</li>
+<li>开发板：    STM32MP157A-DK1</li>
+<li>SDK版本： v1.2.0</li>
+<li>QtCreator版本：4.10.0</li>
+<li>PC $&gt;  表示在PC机上执行的命令行</li>
+<li>Board $&gt;  表示在开发板上执行的命令行</li>
+</ul>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="NOTE"><a href="#NOTE" class="headerlink" title="NOTE"></a>NOTE</h2><ol>
+<li>如果不是使用的SDK V1.2.0 操作可能会有不同，以官方WIKI为准。</li>
+</ol>
+<h2 id="生成Qt-SDK"><a href="#生成Qt-SDK" class="headerlink" title="生成Qt SDK"></a>生成Qt SDK</h2><h3 id="测试连接"><a href="#测试连接" class="headerlink" title="测试连接"></a>测试连接</h3><p>检查一下你是否能访问到外网，如果不能请设置代理。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; wget -q www.google.com &amp;&amp; echo &quot;Internet access over HTTP&#x2F;HTTPS is OK !&quot; || echo &quot;No internet access over HTTP&#x2F;HTTPS </span><br></pre></td></tr></table></figure>
+
+<h3 id="编译生成SDK"><a href="#编译生成SDK" class="headerlink" title="编译生成SDK"></a>编译生成SDK</h3><p>执行下面这条指令进入yocto环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; DISTRO&#x3D;openstlinux-eglfs MACHINE&#x3D;stm32mp1 source layers&#x2F;meta-st&#x2F;scripts&#x2F;envsetup.sh</span><br></pre></td></tr></table></figure>
+
+<p>在<code>layers</code>同一级文件夹下执行下面这条指令生成SDK</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; bitbake meta-toolchain-qt5</span><br></pre></td></tr></table></figure>
+<h3 id="安装SDK"><a href="#安装SDK" class="headerlink" title="安装SDK"></a>安装SDK</h3><p>生成的SDK脚本在<code>Distribution-Package/openstlinux-20-02-19/build-openstlinuxeglfs-stm32mp1/tmp-glibc/deploy/sdk</code>文件夹下</p>
+<p>执行安装脚本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PC $&gt; .&#x2F;meta-toolchain-qt5-openstlinux-eglfs-stm32mp1-x86_64-toolchain-2.6-snapshot</span><br></pre></td></tr></table></figure>
+
+<p>执行之后让选择安装目录,这里因为我的/opt快没空间了选择了其他位置，如果你不用IDE而是终端编译程序的话你需要在终端执行一次<code>STM32MPU_workspace/Distribution-Package/openstlinux-20-02-19/build-openstlinuxeglfs-stm32mp1/SDK/environment-setup-cortexa7t2hf-neon-vfpv4-ostl-linux-gnueabi</code>以初始化SDK环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Enter target directory for SDK (default: &#x2F;opt&#x2F;st&#x2F;stm32mp1&#x2F;2.6-snapshot): &#x2F;home&#x2F;zg&#x2F;STM32MPU_workspace&#x2F;Distribution-Package&#x2F;openstlinux-20-02-19&#x2F;build-openstlinuxeglfs-stm32mp1&#x2F;SDK</span><br><span class="line"></span><br><span class="line">You are about to install the SDK to &quot;&#x2F;home&#x2F;zg&#x2F;STM32MPU_workspace&#x2F;Distribution-Package&#x2F;openstlinux-20-02-19&#x2F;build-openstlinuxeglfs-stm32mp1&#x2F;SDK&quot;. Proceed[Y&#x2F;n]? y</span><br><span class="line"></span><br><span class="line">Extracting SDK......................................................................................................................................................................................................................................done</span><br><span class="line"></span><br><span class="line">Setting it up...done</span><br><span class="line"></span><br><span class="line">SDK has been successfully set up and is ready to be used.</span><br><span class="line"></span><br><span class="line">Each time you wish to use the SDK in a new shell session, you need to source the environment setup script e.g.</span><br><span class="line"></span><br><span class="line"> $ . &#x2F;home&#x2F;zg&#x2F;STM32MPU_workspace&#x2F;Distribution-Package&#x2F;openstlinux-20-02-19&#x2F;build-openstlinuxeglfs-stm32mp1&#x2F;SDK&#x2F;environment-setup-cortexa7t2hf-neon-vfpv4-ostl-linux-gnueabi</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="配置QtCreator"><a href="#配置QtCreator" class="headerlink" title="配置QtCreator"></a>配置QtCreator</h2><h3 id="配置qmake"><a href="#配置qmake" class="headerlink" title="配置qmake"></a>配置qmake</h3><p>Tools-&gt;Options-&gt;Kits-&gt;Qt versions</p>
+<img src="/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/qmake.png" class="" title="qmake">
+
+<h3 id="配置编译器"><a href="#配置编译器" class="headerlink" title="配置编译器"></a>配置编译器</h3><ol>
+<li>C编译器</li>
+</ol>
+<img src="/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/gcc.png" class="" title="gcc">
+
+<ol start="2">
+<li>C++编译器</li>
+</ol>
+<img src="/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/gpp.png" class="" title="gpp">
+<h3 id="配置调试器"><a href="#配置调试器" class="headerlink" title="配置调试器"></a>配置调试器</h3><img src="/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/gdb.png" class="" title="gdb">
+
+<h3 id="配置部署设备"><a href="#配置部署设备" class="headerlink" title="配置部署设备"></a>配置部署设备</h3><img src="/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/dev.png" class="" title="dev">
+
+<h3 id="配置套件"><a href="#配置套件" class="headerlink" title="配置套件"></a>配置套件</h3><img src="/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/kits.png" class="" title="kits">
+
+<h2 id="示例程序验证"><a href="#示例程序验证" class="headerlink" title="示例程序验证"></a>示例程序验证</h2><ol>
+<li>找一个Qt的示例程序，比如这个三角形</li>
+</ol>
+<img src="/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/tran.png" class="" title="tran">
+
+<ol start="2">
+<li>使用刚才配置好的kit配置工程</li>
+</ol>
+<img src="/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E7%94%9F%E6%88%90QtSDK%E5%B9%B6%E9%85%8D%E7%BD%AEQtCreator/configkit.png" class="" title="configkit">
+
+<ol start="3">
+<li>编译</li>
+</ol>
+<p>哎！报错，找不到GLESv2链接库</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">an error occurs: sysroots&#x2F;x86_64-openstlinux_eglfs_sdk-linux&#x2F;usr&#x2F;libexec&#x2F;arm-openstlinux_eglfs-linux-gnueabi&#x2F;gcc&#x2F;arm-openstlinux_eglfs-linux-gnueabi&#x2F;8.2.0&#x2F;real-ld: cannot find -lGLESv2</span><br></pre></td></tr></table></figure>
+
+<p>不慌，这个动态链接库在<code>sdk-2-6-snapshot-qt5/sysroots/cortexa7t2hf-neon-vfpv4-ostl-linux-gnueabi/vendor/lib</code>文件夹下，查看一下qmake之后生成的makefile你会发现它不会链接这个文件夹下的动态库。你可以把里面所有的链接库都拷贝到<code>sdk-2-6-snapshot-qt5/sysroots/cortexa7t2hf-neon-vfpv4-ostl-linux-gnueabi/usr/lib</code>,或者做个软连接。还有一种方法是你直接使用qnake的生成规则，在.pro文件中添加</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LIBS +&#x3D; -lEGL</span><br><span class="line">LIBS +&#x3D; -L&quot;&#x2F;sysroots&#x2F;cortexa7t2hf-neon-vfpv4-ostl-linux-gnueabi&#x2F;vendor&#x2F;lib&quot; -lGAL -lVSC -lGLESv2</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>点击run，程序被部署到开发板，一个旋转的三角形显示在屏幕上</li>
+</ol>
+<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><p><em>WIKI地址：<a target="_blank" rel="noopener" href="https://wiki.st.com/">WIKI</a></em></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Qt/" rel="tag"># Qt</a>
+              <a href="/tags/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag"># STM32MPU学习笔记</a>
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/Distribution-Package/" rel="tag"># Distribution-Package</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/09/13/STM32MPU%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0-%E6%9E%84%E5%BB%BADistribution-Package-eglfs/" rel="prev" title="STM32MPU学习笔记-构建Distribution-Package-eglfs">
+      <i class="fa fa-chevron-left"></i> STM32MPU学习笔记-构建Distribution-Package-eglfs
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/09/26/%E8%B7%A8%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7deepin15-11%E5%88%B0deepinv20/" rel="next" title="跨版本升级deepin15.11到deepinv20">
+      跨版本升级deepin15.11到deepinv20 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NOTE"><span class="nav-number">2.</span> <span class="nav-text">NOTE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90Qt-SDK"><span class="nav-number">3.</span> <span class="nav-text">生成Qt SDK</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E8%BF%9E%E6%8E%A5"><span class="nav-number">3.1.</span> <span class="nav-text">测试连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E7%94%9F%E6%88%90SDK"><span class="nav-number">3.2.</span> <span class="nav-text">编译生成SDK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85SDK"><span class="nav-number">3.3.</span> <span class="nav-text">安装SDK</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEQtCreator"><span class="nav-number">4.</span> <span class="nav-text">配置QtCreator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEqmake"><span class="nav-number">4.1.</span> <span class="nav-text">配置qmake</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-number">4.2.</span> <span class="nav-text">配置编译器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E8%B0%83%E8%AF%95%E5%99%A8"><span class="nav-number">4.3.</span> <span class="nav-text">配置调试器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E9%83%A8%E7%BD%B2%E8%AE%BE%E5%A4%87"><span class="nav-number">4.4.</span> <span class="nav-text">配置部署设备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%A5%97%E4%BB%B6"><span class="nav-number">4.5.</span> <span class="nav-text">配置套件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E7%A8%8B%E5%BA%8F%E9%AA%8C%E8%AF%81"><span class="nav-number">5.</span> <span class="nav-text">示例程序验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E6%A1%A3"><span class="nav-number">6.</span> <span class="nav-text">文档</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">我是一个酸菜鱼</p>
+  <div class="site-description" itemprop="description">点灯工程师</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">26</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">我是一个酸菜鱼</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/clicklove.js"></script>

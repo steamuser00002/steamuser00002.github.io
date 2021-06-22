@@ -923,4 +923,64 @@
         <tag>Weston</tag>
       </tags>
   </entry>
+  <entry>
+    <title>buildroot-为stm32mp1构建基本linux系统</title>
+    <url>/2021/04/15/buildroot-%E4%B8%BAstm32mp1%E6%9E%84%E5%BB%BA%E5%9F%BA%E6%9C%AClinux%E7%B3%BB%E7%BB%9F/</url>
+    <content><![CDATA[<p>&copy; 原创内容，转载请注明出处。</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><blockquote>
+<ul>
+<li>操作系统：  Deepin 20.2.1 桌面版</li>
+<li>开发板：    STM32MP157A-DK1</li>
+<li>PC $&gt;  表示在PC机上执行的命令行</li>
+<li>Board $&gt;  表示在开发板上执行的命令行</li>
+</ul>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="下载buildroot源码"><a href="#下载buildroot源码" class="headerlink" title="下载buildroot源码"></a>下载buildroot源码</h2><p>PC $&gt; <code>git clone git://git.buildroot.net/buildroot</code></p>
+<h2 id="打开源码目录"><a href="#打开源码目录" class="headerlink" title="打开源码目录"></a>打开源码目录</h2><p>PC $&gt; <code>cd buildroot</code></p>
+<h2 id="加载默认配置"><a href="#加载默认配置" class="headerlink" title="加载默认配置"></a>加载默认配置</h2><p>PC $&gt; <code>make stm32mp157a_dk1_defconfig</code></p>
+<img src="/2021/04/15/buildroot-%E4%B8%BAstm32mp1%E6%9E%84%E5%BB%BA%E5%9F%BA%E6%9C%AClinux%E7%B3%BB%E7%BB%9F/defconfig.png" class="" title="默认配置">
+
+<h2 id="根据需求调整配置"><a href="#根据需求调整配置" class="headerlink" title="根据需求调整配置"></a>根据需求调整配置</h2><img src="/2021/04/15/buildroot-%E4%B8%BAstm32mp1%E6%9E%84%E5%BB%BA%E5%9F%BA%E6%9C%AClinux%E7%B3%BB%E7%BB%9F/configadj.png" class="" title="参数调整">
+
+<h2 id="编译并生成log"><a href="#编译并生成log" class="headerlink" title="编译并生成log"></a>编译并生成log</h2><p>PC $&gt; <code>make 2&gt;&amp;1 | tee build.log</code></p>
+<h2 id="烧写生成的sdcard镜像"><a href="#烧写生成的sdcard镜像" class="headerlink" title="烧写生成的sdcard镜像"></a>烧写生成的sdcard镜像</h2><p>PC $&gt; <code>sudo dd if=output/images/sdcard.img of=/dev/mmcblk0 bs=1M conv=fdatasync status=progress</code></p>
+]]></content>
+      <categories>
+        <category>编程</category>
+      </categories>
+      <tags>
+        <tag>STM32MPU学习笔记</tag>
+        <tag>Linux</tag>
+        <tag>Buildroot</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>rt-thread修改系统时钟为HSE</title>
+    <url>/2021/06/22/rt-thread%E4%BF%AE%E6%94%B9%E7%B3%BB%E7%BB%9F%E6%97%B6%E9%92%9F%E4%B8%BAHSE/</url>
+    <content><![CDATA[<p>&copy; 原创内容，转载请注明出处。</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><blockquote>
+<ul>
+<li>操作系统：Win10</li>
+<li>芯片型号： STM32F103</li>
+<li>IDE$&gt;  RT-Thread Studio</li>
+</ul>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="晶振频率修改"><a href="#晶振频率修改" class="headerlink" title="晶振频率修改"></a>晶振频率修改</h2><pre><code>`stm32fxxx_hal_config.h`文件中修改HSE_VALUE，比如外部16M晶振修改为
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#if !defined  (HSE_VALUE) </span><br><span class="line">    #define HSE_VALUE    ((uint32_t)16000000) &#x2F;*!&lt; Value of the External oscillator in Hz *&#x2F;</span><br><span class="line">#endif &#x2F;* HSE_VALUE *&#x2F;</span><br></pre></td></tr></table></figure>
+</code></pre>
+<h2 id="时钟分频修改"><a href="#时钟分频修改" class="headerlink" title="时钟分频修改"></a>时钟分频修改</h2><pre><code>`drv_clk.c`文件中修改`system_clock_config`函数，内容修改为自己的配置，比如
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">void system_clock_config(int target_freq_Mhz)</span><br><span class="line">&#123;</span><br><span class="line">    RCC_OscInitTypeDef RCC_OscInitStruct &#x3D; &#123;0&#125;;</span><br><span class="line">    RCC_ClkInitTypeDef RCC_ClkInitStruct &#x3D; &#123;0&#125;;</span><br><span class="line"></span><br><span class="line">    &#x2F;** Initializes the CPU, AHB and APB busses clocks *&#x2F;</span><br><span class="line">    RCC_OscInitStruct.OscillatorType &#x3D; RCC_OSCILLATORTYPE_HSE;</span><br><span class="line">    RCC_OscInitStruct.HSEState &#x3D; RCC_HSE_ON;</span><br><span class="line">    RCC_OscInitStruct.HSEPredivValue &#x3D; RCC_HSE_PREDIV_DIV2;</span><br><span class="line">    RCC_OscInitStruct.HSIState &#x3D; RCC_HSI_ON;</span><br><span class="line">    RCC_OscInitStruct.PLL.PLLState &#x3D; RCC_PLL_ON;</span><br><span class="line">    RCC_OscInitStruct.PLL.PLLSource &#x3D; RCC_PLLSOURCE_HSE;</span><br><span class="line">    RCC_OscInitStruct.PLL.PLLMUL &#x3D; RCC_PLL_MUL9;</span><br><span class="line">    if (HAL_RCC_OscConfig(&amp;RCC_OscInitStruct) !&#x3D; HAL_OK)</span><br><span class="line">    &#123;</span><br><span class="line">        Error_Handler();</span><br><span class="line">    &#125;</span><br><span class="line">    &#x2F;** Initializes the CPU, AHB and APB busses clocks *&#x2F;</span><br><span class="line">    RCC_ClkInitStruct.ClockType &#x3D; RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK</span><br><span class="line">                            |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;</span><br><span class="line">    RCC_ClkInitStruct.SYSCLKSource &#x3D; RCC_SYSCLKSOURCE_PLLCLK;</span><br><span class="line">    RCC_ClkInitStruct.AHBCLKDivider &#x3D; RCC_SYSCLK_DIV1;</span><br><span class="line">    RCC_ClkInitStruct.APB1CLKDivider &#x3D; RCC_HCLK_DIV2;</span><br><span class="line">    RCC_ClkInitStruct.APB2CLKDivider &#x3D; RCC_HCLK_DIV1;</span><br><span class="line"></span><br><span class="line">    if (HAL_RCC_ClockConfig(&amp;RCC_ClkInitStruct, FLASH_LATENCY_2) !&#x3D; HAL_OK)</span><br><span class="line">    &#123;</span><br><span class="line">        Error_Handler();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</code></pre>
+]]></content>
+      <categories>
+        <category>编程</category>
+      </categories>
+      <tags>
+        <tag>rt-thread</tag>
+      </tags>
+  </entry>
 </search>

@@ -983,4 +983,75 @@
         <tag>rt-thread</tag>
       </tags>
   </entry>
+  <entry>
+    <title>VS2019配合GUIBulider的emWin仿真环境搭建</title>
+    <url>/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<p>&copy; 原创内容，转载请注明出处。</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><blockquote>
+<ul>
+<li>操作系统：  Windows10  </li>
+<li>开发环境：    VS2019  </li>
+<li>emWin版本： V5.48  </li>
+<li>配套软件：GUIBulider  </li>
+</ul>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="获取emWin仿真文件"><a href="#获取emWin仿真文件" class="headerlink" title="获取emWin仿真文件"></a>获取emWin仿真文件</h2><p>下载地址 ：<code>https://www.segger.com/downloads/emwin</code></p>
+<h2 id="打开vs解决方案"><a href="#打开vs解决方案" class="headerlink" title="打开vs解决方案"></a>打开vs解决方案</h2><p>解压后的目录结构：</p>
+<img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/dir_tree.png" class="" title="目录树">
+
+<ol>
+<li>双击 <code>SimulationTrial.sln</code> 文件打开解决方案</li>
+<li>点击确定升级到自己目前使用的工具集<img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/ptools.png" class="" title="升级工具集">
+工具集可在项目选卡设置<img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/project.png" class="" title="项目"></li>
+<li>编译</li>
+</ol>
+<h2 id="编译错误处理"><a href="#编译错误处理" class="headerlink" title="编译错误处理"></a>编译错误处理</h2><h3 id="编码报错"><a href="#编码报错" class="headerlink" title="编码报错"></a>编码报错</h3><img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/encode.png" class="" title="编码">
+
+<p>解决方法：双击错误，确定跳转到文件，重新保存。</p>
+<img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/code.png" class="" title="编码">
+
+<h3 id="链接报错"><a href="#链接报错" class="headerlink" title="链接报错"></a>链接报错</h3><img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/link.png" class="" title="链接">
+
+<p>解决方法：参阅解压根目录下的<code>HowTo_RunSimulationUnderVS2015_2017.txt</code>中的内容。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Make sure the selected Windows SDK is installed:</span><br><span class="line">Properties -&gt; Configuration Properties -&gt; General -&gt; Windows SDK Version.</span><br><span class="line"></span><br><span class="line">1. Right-Click on the Project (e.g. SimulationTrial) -&gt; Properties</span><br><span class="line">2  Set Configuration to &quot;All Configurations&quot;</span><br><span class="line">3. Goto Configuration Properties -&gt; Linker -&gt; Input.</span><br><span class="line">4. Add under Additional Dependencies: &quot;legacy_stdio_definitions.lib&quot;</span><br><span class="line">5. Set Ignore All Default Libraries: &quot;No&quot;</span><br><span class="line">6. Set Ignore Specific Default Libraries: &quot;LIBC.lib;LIBCMTD.lib&quot;</span><br><span class="line">7. Goto Configuration Properties -&gt; Linker -&gt; Advanced</span><br><span class="line">8. Set Image Has Safe Exception Handlers:&quot;No (&#x2F;SAFESEH:NO)&quot;</span><br><span class="line">9. Click &quot;OK&quot;-Button.</span><br></pre></td></tr></table></figure>
+
+<p>修改后</p>
+<img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/input.png" class="" title="输入">
+<img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/advance.png" class="" title="高级">
+
+<h2 id="运行emWin-Demo效果"><a href="#运行emWin-Demo效果" class="headerlink" title="运行emWin Demo效果"></a>运行emWin Demo效果</h2><img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/demo.png" class="" title="示例">
+
+<h2 id="使用GUIBulider生成代码"><a href="#使用GUIBulider生成代码" class="headerlink" title="使用GUIBulider生成代码"></a>使用GUIBulider生成代码</h2><h3 id="软件"><a href="#软件" class="headerlink" title="软件"></a>软件</h3><p>由于stemWin是segger为ST定制的emWin，工具通用。这里使用的是CubeMX下载的GUIBulider</p>
+<p>我的路径：<code>C:\Users\LZG\STM32Cube\Repository\STM32Cube_FW_F4_V1.25.0\Middlewares\ST\STemWin\Software</code><br>路径中包含了许多emWin的小工具。</p>
+<img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/GUIBulider.png" class="" title="GUIBulider">
+
+<p>GUIBulider.ini包含的是GUIBulider生成代码路径的配置，根据需要修改</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[Settings]</span><br><span class="line">ProjectPath&#x3D;&quot;C:\Users\LZG\STM32Cube\Repository\STM32Cube_FW_F4_V1.25.0\Middlewares\ST\STemWin\Software\&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="软件使用"><a href="#软件使用" class="headerlink" title="软件使用"></a>软件使用</h3><p>使用GUIBulider只需要拖一拖就可以轻松的画出漂亮的界面。<br>选项卡file-&gt;save自动生成代码。</p>
+<p>一个简单的示例：</p>
+<img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/button.png" class="" title="示例">
+
+<h2 id="将生成的代码放入emWin仿真代码中"><a href="#将生成的代码放入emWin仿真代码中" class="headerlink" title="将生成的代码放入emWin仿真代码中"></a>将生成的代码放入emWin仿真代码中</h2><h3 id="移除仿真环境原有demo"><a href="#移除仿真环境原有demo" class="headerlink" title="移除仿真环境原有demo"></a>移除仿真环境原有demo</h3><img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/before.png" class="" title="remove">
+<img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/before1.png" class="" title="remove">
+
+<h3 id="将GUIBulider生成的代码添加进工程"><a href="#将GUIBulider生成的代码添加进工程" class="headerlink" title="将GUIBulider生成的代码添加进工程"></a>将GUIBulider生成的代码添加进工程</h3><p>dialog默认生成代码文件名<code>WindowDLG.c</code></p>
+<h3 id="添加MainTask-c文件"><a href="#添加MainTask-c文件" class="headerlink" title="添加MainTask.c文件"></a>添加MainTask.c文件</h3><img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/init.png" class="" title="init">
+
+<p>MainTask.c 文件用于存放emWin的入口函数，内容为：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#include &quot;dialog.h&quot;					&#x2F;&#x2F;包含window对话框头文件</span><br><span class="line">extern WM_HWIN CreateWindow(void);</span><br><span class="line">void MainTask(void)					&#x2F;&#x2F;emWin入口函数</span><br><span class="line">&#123;</span><br><span class="line">	GUI_Init();						&#x2F;&#x2F;初始化emWin</span><br><span class="line">	CreateWindow();					&#x2F;&#x2F;创建窗体</span><br><span class="line">	while (1)</span><br><span class="line">	&#123;</span><br><span class="line">		GUI_Delay(10);				&#x2F;&#x2F;调用延时函数，目的是进入emWin的事件循环</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="仿真效果"><a href="#仿真效果" class="headerlink" title="仿真效果"></a>仿真效果</h2><img src="/2021/07/01/VS2019%E9%85%8D%E5%90%88GUIBulider%E7%9A%84emWin%E4%BB%BF%E7%9C%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/result.png" class="" title="效果">
+
+
+
+
+
+]]></content>
+      <tags>
+        <tag>环境搭建</tag>
+        <tag>emWin</tag>
+      </tags>
+  </entry>
 </search>
